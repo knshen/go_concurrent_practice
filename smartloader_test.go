@@ -38,3 +38,36 @@ func TestSmartLoader(t *testing.T) {
 	dur := time.Since(t0)
 	fmt.Println(dur)
 }
+
+func TestSmartLoader2(t *testing.T) {
+	sl := NewSmartLoader()
+	sl.SetTimeout(time.Second * 5)
+
+	l1 := NewLoader(func() error {
+		fmt.Println("loader1")
+		time.Sleep(time.Second)
+		return nil
+	})
+	l2 := NewLoader(func() error {
+		fmt.Println("loader2")
+		time.Sleep(time.Second * 2)
+		return nil
+	})
+	l3 := NewLoader(func() error {
+		fmt.Println("loader3")
+		time.Sleep(time.Second * 3)
+		return nil
+	})
+
+	sl.AddLoaders(l1, l2, l3)
+	l2.AddPreLoader(l1)
+	l3.AddPreLoader(l1)
+
+	// l1 -> l2
+	//   -> l3
+
+	t0 := time.Now()
+	sl.Execute()
+	dur := time.Since(t0)
+	fmt.Println(dur)
+}
